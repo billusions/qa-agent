@@ -11,6 +11,62 @@ Two agents do the work:
 
 The main Claude Code session runs the stages in order and writes the summary (Stage 7). After each stage it stops and waits for your approval.
 
+## How it works
+
+```mermaid
+flowchart TD
+    REQ[/"requirements/<br/>R1, R2, … E1, E2, …"/]
+    ENV[/".env<br/>app URLs + 2 test accounts"/]
+    QA(["👤 Human QA<br/>approves each stage"])
+
+    subgraph D["test-designer — files only, no app access"]
+        S1["Stage 1<br/>Test cases"]
+        S2["Stage 2<br/>Gap analysis"]
+    end
+
+    subgraph A["test-automator — browser + terminal"]
+        S3["Stage 3<br/>Explore the app"]
+        S4["Stage 4<br/>Write tests"]
+        S5["Stage 5<br/>Run and triage"]
+        S6["Stage 6<br/>Bug reports"]
+    end
+
+    S7["Stage 7<br/>Summary<br/>(main session)"]
+    APP[("App under test<br/>front end + API")]
+
+    REQ --> S1 --> TC[/"test-cases.md"/]
+    TC --> S2 --> GAPS[/"gaps.md"/]
+    TC --> S3
+    GAPS --> S3
+    ENV --> S3
+    S3 <-->|Playwright MCP| APP
+    S3 --> EXP[/"exploration.md"/] --> S4
+    S4 --> TESTS[/"tests/api, tests/e2e"/] --> S5
+    S5 <-->|npx playwright test| APP
+    S5 --> RUN[/"test-run.md"/] --> S6
+    S5 -.->|new requirement gaps| GAPS
+    S6 --> BUGS[/"bugs/BUG-XX.md"/]
+    RUN --> S7
+    BUGS --> S7
+    GAPS --> S7
+    S7 --> SUM[/"qa-summary.md"/]
+
+    QA -.->|feedback / go on| D
+    QA -.->|feedback / go on| A
+    QA -.->|final decision| SUM
+```
+
+How each failure in Stage 5 is handled:
+
+```mermaid
+flowchart LR
+    F["Test failed"] --> Q{"Why?"}
+    Q -->|wrong selector, timing, setup| TD["Test defect<br/>fix the test, max 2 tries,<br/>then human review"]
+    Q -->|app differs from requirement| AB["App bug<br/>reproduce again via API<br/>→ bug report"]
+    Q -->|expected result unclear| RG["Requirement gap<br/>→ gaps.md"]
+    Q -->|app down, network, auth| EN["Environment<br/>report and stop"]
+```
+
 ## Pipeline
 
 | Stage | Owner | Output |
