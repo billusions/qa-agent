@@ -79,6 +79,13 @@ SHARED_PASSWORD=
 ```
 Use only these test accounts. Never create accounts or enter real personal data. `tests/helpers/env.ts` loads and validates these.
 
+## Writing style (all outputs and replies)
+The human QA is not a native English speaker. Write in plain, simple English:
+- Short sentences. One idea per sentence.
+- Common words. No idioms, slang or fancy words ("silently" → "without any message", "leverage" → "use").
+- Explain a technical term the first time you use it, in a few words (e.g. "session fixation — the app keeps the same session ID after login").
+- Keep standard QA terms as they are: P1/P2/P3, API, E2E, test case, bug, requirement.
+
 ## Working rules
 - State assumptions explicitly, marked **[A]** in test cases. Every [A] gets a gap entry. Don't silently invent expected behavior.
 - An app's actual behavior never becomes the expected result. Disagreements go to bugs or gaps.
