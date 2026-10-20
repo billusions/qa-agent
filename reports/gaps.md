@@ -356,3 +356,37 @@ Note: TC-R1-25 is P3 because returning to the page is UX. If the app has a "retu
 ---
 
 ## Found during automation
+
+Added in Stage 5 (test run, 2026-10-20). The test-designer should review these.
+
+### GA-01 — Is login throttling required? (Medium, TC-R1-13, related to G-07)
+
+**What we saw:** 20 failed logins in the test run, then 30 more in a row and 20 at the same time in the check run. All 70 got 401. There was no 429, no lock message, no `Retry-After` or `RateLimit` header, and the answers did not get slower. Only an unregistered email was used (G-08).
+
+**Question:**
+1. Is login throttling (slower answers or a temporary block after many failures) a requirement for this release? R1 does not say it.
+2. If yes: is the limit per account, per IP address, or both? Our test can only see a limit per IP address or per email. If the limit counts only real accounts, our test cannot see it without sending wrong passwords to a real account.
+
+**Assumption used:** We keep the expected result of TC-R1-13: the server limits repeated failed logins [A]. The failure is reported as a candidate app bug. If the product owner says throttling is not required, the bug should be closed and TC-R1-13 changed by the test-designer.
+
+**Test ID:** TC-R1-13
+
+### GA-02 — The session token is kept in localStorage, not in a cookie (Medium, TC-R1-16, related to G-16)
+
+**What we saw:** Login returns the token in the response body. The web app saves it in `localStorage` (browser storage that any script on the page can read). There is no cookie. So the cookie checks of TC-R1-16 (HttpOnly, Secure, SameSite) cannot run. The test passes with the note "cookie check N/A".
+
+**Question:** Is a token in `localStorage` accepted? Or must the session be an HttpOnly cookie, so that an injected script cannot read it?
+
+**Assumption used:** It is accepted for now. TC-R1-16 checks only HTTPS and "no credentials in the URL". If the answer is "must be a cookie", this becomes a bug and TC-R1-16 must fail.
+
+**Test ID:** TC-R1-16
+
+### GA-03 — No expired token is available for testing (Medium, TC-R1-08 step 4, related to G-09)
+
+**What we saw:** Tokens are valid for 7 days. The test has no signing key, so it cannot make a real expired token. Step 4 of TC-R1-08 did not run. A forged token with a changed expiry time is rejected, but that only proves that the signature is checked.
+
+**Question:** Can the test environment give us a token that is already expired, or set a short token lifetime (for example 1 minute)?
+
+**Assumption used:** An expired token is rejected like a missing one (401). Step 4 stays not run until we have a way to get an expired token.
+
+**Test ID:** TC-R1-08
