@@ -14,8 +14,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'test-results/results.json' }]],
   use: {
-    trace: 'retain-on-failure',
+    // Traces are off: they record request bodies, headers and call arguments, so they would hold
+    // passwords and tokens. Evidence = screenshots (password fields are masked) + annotations + results.json.
+    trace: 'off',
     screenshot: 'only-on-failure',
+    video: 'off',
   },
   projects: [
     {
