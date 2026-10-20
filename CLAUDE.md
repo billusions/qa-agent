@@ -39,8 +39,9 @@ Do not read anything outside this project folder. Do not search for or use earli
 1. One checklist line per requirement ID.
 2. Rank by the damage a silent failure would do. Highest by default: **access control and permissions, security, data integrity / data loss** (deletes, moves, overwrites, conflicts), money. Then core features, then UX.
 3. Priority: **P1** = access control, security or data loss only; **P2** = core feature broken; **P3** = UX or cosmetic. Keep P1 focused (roughly 15–20% of cases). If everything is P1, nothing is.
-4. Testing pyramid: unit tests belong to developers. **Most automated tests are API-level.** Only a few browser (E2E) tests (~10–15) cover what only a real browser can check (drag-and-drop, upload progress, viewers, navigation/breadcrumbs, warnings and states shown to the user, script execution). Subjective UX checks are Manual.
-5. When the product has users or roles, test with **at least two accounts**. Every permission test checks both sides: the account granting access and the account receiving it, plus an anonymous request.
+4. Browser: **Chromium only** (Playwright `e2e` project and Playwright MCP, configured in `.mcp.json`).
+5. Testing pyramid: unit tests belong to developers. **Most automated tests are API-level.** Only a few browser (E2E) tests (~10–15) cover what only a real browser can check (drag-and-drop, upload progress, viewers, navigation/breadcrumbs, warnings and states shown to the user, script execution). Subjective UX checks are Manual.
+6. When the product has users or roles, test with **at least two accounts**. Every permission test checks both sides: the account granting access and the account receiving it, plus an anonymous request.
 
 ## Shared formats
 
@@ -65,7 +66,7 @@ Layer: UI only | API | both
 Evidence: <test name, screenshot or trace path>
 ```
 
-Summary (Stage 7, `reports/qa-summary.md`): pass/fail counts by level (API / E2E), coverage by requirement ID, bugs by severity, open gaps, tests needing human review, and the top 3 risks for release.
+Summary (Stage 7, `reports/qa-summary.md`, written by the main session because it's the only one that sees every stage's output): pass/fail counts by level (API / E2E), coverage by requirement ID, bugs by severity, open gaps, tests needing human review, and the top 3 risks for release.
 
 ## Environment (.env — never committed)
 ```
