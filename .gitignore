@@ -30,3 +30,5 @@ coverage/
 .idea/
 .vscode/
 .playwright-mcp/
+# Claude Code personal settings
+.claude/settings.local.json
