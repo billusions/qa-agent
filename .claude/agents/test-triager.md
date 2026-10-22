@@ -51,6 +51,8 @@ Before reporting an app bug:
 - reproduce it a second time, via the API where possible, outside the test code;
 - check whether the problem is UI-only or also in the backend.
 
+First read every existing file in `bugs/`. If an existing bug already covers the same root cause, do not write a new one. Update that bug instead: add the new test name and evidence, and a line with the date it was seen again. If the app now behaves correctly, add a line that it no longer reproduces and the date.
+
 Then use the bug format from `CLAUDE.md`:
 - one bug per root cause, numbered `BUG-01`, `BUG-02`, … continuing from existing files;
 - Evidence points to the test name and the trace or screenshot under `test-results/`.
