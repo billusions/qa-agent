@@ -69,10 +69,22 @@ const MUTATING = [
   /\bopen\([^)]*,\s*["'][wax+]/,
 ];
 
-function checkBash(cmd, cwd) {
+// A heredoc fed to cat or tee is only text written to the redirect target, and that
+// target is still checked. Drop its body so words in it don't look like commands.
+// Heredocs fed to an interpreter (node, python, bash) keep their body: it is code.
+function stripTextHeredocs(cmd) {
+  return cmd.replace(
+    /^([ \t]*(?:cat|tee)\b[^\n]*<<-?[ \t]*(['"]?)(\w+)\2[^\n]*\n)[\s\S]*?\n[ \t]*\3[ \t]*(?=\n|$)/gm,
+    '$1',
+  );
+}
+
+function checkBash(rawCmd, cwd) {
+  const cmd = stripTextHeredocs(rawCmd);
   const writes = MUTATING.some((re) => re.test(cmd)) || /(^|[^&\d])>{1,2}(?!&)|\btee\b/.test(cmd);
 
-  if (/playwright/.test(cmd) && /(^|\s)(--update-snapshots|-u)(\s|=|$)/.test(cmd)) {
+  // Only -u given to "playwright test" itself, not e.g. "env -u VAR".
+  if (/\bplaywright\s+test\b[^;&|\n]*\s(--update-snapshots|-u)(\s|=|$)/.test(cmd)) {
     deny('Blocked: --update-snapshots writes into tests/.');
   }
   if (/\b(npm|pnpm|yarn)\s+(install|i|add|remove|rm|uninstall|update|up|ci|link|pkg)\b/.test(cmd)) {
