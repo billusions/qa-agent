@@ -7,10 +7,13 @@ A Product QA framework. Drop a product's requirements into `requirements/` and i
 | Agent | Stages | Gets | Never gets |
 |---|---|---|---|
 | `test-designer` (`.claude/agents/test-designer.md`) | 1–2: requirements → test cases + gap analysis | `requirements/`, file read/write | Browser, terminal, the app, `tests/`, `bugs/` |
-| `test-automator` (`.claude/agents/test-automator.md`) | 3–6: explore → automate → run → triage → bug reports | Browser (Playwright MCP), terminal, `test-cases/`, `reports/gaps.md` | Permission to change expected results |
+| `test-automator` (`.claude/agents/test-automator.md`) | 3–4: explore → automate; fixes test defects sent back from Stage 5 | Browser (Playwright MCP), terminal, `test-cases/`, `reports/gaps.md` | Permission to change expected results; failure triage; bug reports |
+| `test-triager` (`.claude/agents/test-triager.md`) | 5–6: run → triage → bug reports | Browser (Playwright MCP), terminal, read access to `tests/` and `pages/` | Write access to anything except `reports/test-run.md`, `reports/gaps.md`, `bugs/`, `test-results/` (blocked by a hook) |
 | Main session (orchestrator) | 7: summary; runs the pipeline | Everything above | — |
 
-The split is deliberate: the designer derives expected behavior from what the product **should** do, before anyone has seen how it currently behaves. The automator must not quietly "fix" an expected result to match the app.
+The splits are deliberate:
+- The designer derives expected behavior from what the product **should** do, before anyone has seen how it currently behaves. The automator must not quietly "fix" an expected result to match the app.
+- The triager judges tests it did not write, and it cannot change them. So a failing test cannot be "fixed" into a pass by the same agent that decides whether the failure is a bug. The hook `.claude/hooks/block-test-edits.mjs` (registered in the triager's frontmatter) allows its file writes only to `reports/test-run.md`, `reports/gaps.md`, `bugs/` and `test-results/`. It also blocks shell commands that write to `tests/`, `pages/`, `test-cases/`, `requirements/`, `.claude/` or the config files.
 
 ## Pipeline — run stages in order, save each output
 
@@ -20,13 +23,14 @@ The split is deliberate: the designer derives expected behavior from what the pr
 | 2. Gap analysis | test-designer | `reports/gaps.md` |
 | 3. Explore the app | test-automator | `reports/exploration.md` |
 | 4. Automated tests | test-automator | `tests/api/`, `tests/e2e/`, `tests/helpers/`, `pages/` |
-| 5. Run and triage | test-automator | `reports/test-run.md` |
-| 6. Bug reports | test-automator | `bugs/BUG-XX.md` |
+| 5. Run and triage | test-triager | `reports/test-run.md` |
+| 6. Bug reports | test-triager | `bugs/BUG-XX.md` |
 | 7. Summary | main session | `reports/qa-summary.md` |
 
 Orchestration:
 - Run **one stage per agent call**. After each stage, stop, show a short summary and **wait for approval** before starting the next.
 - Pass the agent the stage number and any feedback from the human QA. The agents read their own inputs from disk.
+- Test-defect loop: if Stage 5 lists entries under `## Sent back to test-automator`, show them to the human QA. On approval, send them to the test-automator (Stage 4 rework), then run Stage 5 again with the test-triager. A test that fails as a test defect twice goes to human review.
 - If `requirements/` is empty, stop and ask for requirements. Do not invent a product.
 
 ## Inputs

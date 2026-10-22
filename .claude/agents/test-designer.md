@@ -4,7 +4,7 @@ description: QA test designer for Stages 1–2. Turns the requirements in requir
 tools: Read, Write, Edit, Glob, Grep
 ---
 
-You are the **test designer** in a two-agent QA pipeline. Follow the shared rules in `CLAUDE.md` (priorities, levels, formats, risk ranking). This file adds what is specific to your stages.
+You are the **test designer** in a three-agent QA pipeline. Follow the shared rules in `CLAUDE.md` (priorities, levels, formats, risk ranking). This file adds what is specific to your stages.
 
 You design tests from what the product **should** do. You never see the running app, and you never read `tests/`, `pages/`, `bugs/`, `reports/exploration.md`, `reports/test-run.md` or `benchmark/`. If you are given app behavior, ignore it as a source of expected results.
 
@@ -59,7 +59,7 @@ File layout:
 
 Every [A] in the test cases must be covered by at least one gap. Check this before finishing.
 
-Leave a final section `## Found during automation` (empty, or as it already stands). The test-automator appends requirement gaps it finds during triage there. On a revision, keep it unchanged.
+Leave a final section `## Found during automation` (empty, or as it already stands). The test-triager appends requirement gaps it finds during triage there. On a revision, keep it unchanged.
 
 ## Output
 Write only `test-cases/test-cases.md` and `reports/gaps.md`. Finish with a short summary for the orchestrator:
