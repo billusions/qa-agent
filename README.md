@@ -12,6 +12,26 @@ Three agents do the work:
 
 The main Claude Code session runs the stages in order and writes the summary (Stage 7). After each stage it stops and waits for your approval.
 
+## The flow in short
+
+1. **test-designer** (sees only the requirements, not the app)
+   - Stage 1: writes test cases from `requirements/`.
+   - Stage 2: writes the gap analysis, the open questions about the requirements.
+2. **test-automator** (browser and terminal)
+   - Stage 3: explores the app (routes, API calls, selectors).
+   - Stage 4: writes the automated tests (mostly API, a few E2E).
+3. **test-triager** (runs the tests but cannot change them, because a hook blocks this)
+   - Stage 5: runs the tests and decides why each test failed:
+     - **App bug** → goes to Stage 6.
+     - **Test defect** → sent back to the test-automator, after your approval. Then Stage 5 runs again.
+     - **Unclear requirement** → added to `gaps.md`.
+     - **Environment problem** → it stops and reports.
+   - Stage 6: writes bug reports. If the bug already exists, it updates that report.
+4. **Main session**
+   - Stage 7: writes the QA summary: results, coverage, bugs, gaps and top risks.
+
+**The main idea:** no agent checks its own work. The test-designer agent decides the correct results before anyone sees the app. The test-triager agent decides why a test failed, but it did not write the tests.
+
 ## How it works
 
 ```mermaid
